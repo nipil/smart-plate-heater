@@ -10,8 +10,6 @@
                    projectFiles="true">
       <itemPath>Makefile</itemPath>
       <itemPath>README.md</itemPath>
-      <itemPath>dist/default/production/smart-plate-heater.X.production.hex</itemPath>
-      <itemPath>dist/default/debug/smart-plate-heater.X.debug.lst</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
