@@ -50,6 +50,9 @@ void wait_for_data_low() {
 
 // HX711 : after reset channel is A with gain 128
 
+
+#define WAIT_FOR_LOW(X) while(X)
+
 void main(void) {
     // init
     OPTION = 0xFF & ~T0CS; // Allow using GP2 as GPIO (disable T0CS)
@@ -57,31 +60,11 @@ void main(void) {
     GPIObits.GP0 = 0; // disable optotriac
     GPIObits.GP1 = 1; // disable HX711
 
-    GPIObits.GP0 = 1;
-    _delay(6);
-    GPIObits.GP0 = 0;
-
-    GPIObits.GP0 = 1;
-    _delay(7);
-    GPIObits.GP0 = 0;
-
-    GPIObits.GP0 = 1;
-    _delay(8);
-    GPIObits.GP0 = 0;
-
-    GPIObits.GP0 = 1;
-    _delay(9);
-    GPIObits.GP0 = 0;
-
-    GPIObits.GP0 = 1;
-    _delay(10);
-    GPIObits.GP0 = 0;
-
-    GPIObits.GP0 = 1;
-    _delay(11);
-    GPIObits.GP0 = 0;
-//    wait_for_data_low(); // conversion not ready while DOUT is HIGH
-
+    _delay(100); // make sure HX711 goes to sleep
+    GPIObits.GP1 = 0; // activate HX711
+//    WAIT_FOR_LOW(GPIObits.GP2); // conversion not ready while DOUT is HIGH
+    wait_for_data_low(); // conversion not ready while DOUT is HIGH
+    GPIObits.GP1 = 1; // disable HX711
 
 
     // when PD_SCK is LOW, chip is active
@@ -97,9 +80,6 @@ void main(void) {
     // chip powers down after 60 micros of PD_SCK being HIGH
 
 
-
-    GPIObits.GP0 = 1; // enable optotriac (DEBUG: use as end-of-processing mark)
-    GPIObits.GP1 = 1; // disable HX711
 
     uint8_t data = GPIO;
 }
