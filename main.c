@@ -16,13 +16,6 @@
 
 #include <xc.h>
 
-// oscillator frequency for _delay*() macros
-// https://support.microchip.com/s/article/Delay-functions-in-XC16---XC8-using-PIC-devices
-#define _XTAL_FREQ 4000000L
-
-// non repeating pattern for stimulus
-// 11111011 10011010 11000101
-
 // PINS
 // GPO / output / OPTOTRIAC
 // GP1 / output / HX711 / PD_SCK
@@ -31,6 +24,8 @@
 
 // HX711 : after reset channel is A with gain 128
 #define HX711_N_BITS 24
+
+#define THRESHOLD_VALUE 2000000L
 
 void main(void) {
     // Allow using GP2 as GPIO (disable T0CS)
@@ -44,12 +39,7 @@ void main(void) {
     // make sure HX711 goes to sleep
     _delay(100);
 
-    // make sure HX711 goes to sleep (>60us) at first
     while (1) {
-
-        // DEBUG: time marker
-        GPIObits.GP0 = 1;
-
         // HX711 output is a 24 bits **signed** int
         // output is a 2's complement value
         // from min 0x800000 to max 0x7FFFFF
@@ -67,8 +57,11 @@ void main(void) {
             GPIObits.GP1 = 1;
             // wait for data ready (T2)
             _delay(1);
+
             // read data bit and append from low side
-            value = (value << 1) | GPIObits.GP2;
+            value = (value << 1);
+            value |= GPIObits.GP2;
+
             // wait high (T3)
             _delay(1);
             // clock fall
@@ -94,11 +87,19 @@ void main(void) {
         // disable HX711
         GPIObits.GP1 = 1;
 
-        // DEBUG: time marker
-        GPIObits.GP0 = 0;
-        _delay(1);
-
         // make sure HX711 goes to sleep
         _delay(100);
+
+        // if too light, disable unconditionally
+        if (value < THRESHOLD_VALUE) {
+            GPIObits.GP0 = 0;
+            continue;
+        }
+
+        // enough weight present, activate but only if requested
+        if (GPIObits.GP3) {
+            // enable optotriac
+            GPIObits.GP0 = 1;
+        }
     }
 }
