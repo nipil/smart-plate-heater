@@ -16,6 +16,18 @@
 
 #include <xc.h>
 
+// Calibration done using an arduino with serial output
+const int32_t RAW_SELF_SUSPENDED_WEIGHT = 357882L;
+const int32_t RAW_SELF_GRAVITY_WEIGHT = 655988L;
+const int32_t RAW_EDGE_312_GRAMS = 793342L;
+const int32_t RAW_EDGE_1293_GRAMS = 1216109L;
+const int32_t RAW_EDGE_2254_GRAMS = 1615611L;
+const int32_t RAW_EDGE_2566_GRAMS = 1800440L;
+const int32_t RAW_EDGE_3547_GRAMS = 2248014L;
+const int32_t RAW_EDGE_3859_GRAMS = 2383308L;
+const int32_t RAW_EDGE_4619_GRAMS = 2609744L;
+const int32_t UNITS_PER_GRAM = 438L;
+
 // PINS
 // GPO / output / OPTOTRIAC
 // GP1 / output / HX711 / PD_SCK
