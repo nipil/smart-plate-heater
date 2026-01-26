@@ -2672,6 +2672,26 @@
 		)
 		(uuid "0ab7f748-7380-4f70-96b6-eb86c6ca4a7b")
 	)
+	(text "Less current for green led"
+		(exclude_from_sim no)
+		(at 150.876 30.48 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "1e1f4534-70e9-412e-b008-ecef6d61515b")
+	)
+	(text "Short protection (max 15mA)"
+		(exclude_from_sim no)
+		(at 90.17 116.84 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "252e6583-c782-4ed7-93f9-9f1e6cc45bee")
+	)
 	(text "blue"
 		(exclude_from_sim no)
 		(at 170.434 44.958 0)
@@ -2682,7 +2702,37 @@
 		)
 		(uuid "2fbacd56-29e0-46b2-893f-2a48d7452f76")
 	)
-	(text "Pins for PIC10F202 SOT-23 to DIP-6 adapter"
+	(text "Drain\nresistor"
+		(exclude_from_sim no)
+		(at 120.396 48.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "498e7b2c-bb9c-4da3-9ade-f1dc0af74ce7")
+	)
+	(text "More current for yellow led"
+		(exclude_from_sim no)
+		(at 161.798 113.284 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "4a3903d8-f3f6-42bd-9c02-0ca1d548e388")
+	)
+	(text "Handle disconnect"
+		(exclude_from_sim no)
+		(at 67.564 82.55 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "705c16ef-3c52-4994-962c-a6ab66c05191")
+	)
+	(text "Pins for PIC10F202 SOT-23 to DIP-6 adapter ...\nbecause i bought SOP23 but solder on perfboards !"
 		(exclude_from_sim no)
 		(at 83.312 159.258 0)
 		(effects
@@ -2732,7 +2782,7 @@
 		)
 		(uuid "9965b5e4-73aa-4461-ae9b-3c2f360ea01a")
 	)
-	(text "Header to relay board"
+	(text "Header to relay board input"
 		(exclude_from_sim no)
 		(at 231.394 157.48 0)
 		(effects
@@ -2741,6 +2791,16 @@
 			)
 		)
 		(uuid "9d3a822a-cf3a-4cf2-99cd-a0eb1e8ef515")
+	)
+	(text "Handle disconnect"
+		(exclude_from_sim no)
+		(at 159.258 95.504 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "b77546fc-21fb-4693-b0b6-c7edce65f575")
 	)
 	(text "green/white"
 		(exclude_from_sim no)
@@ -2751,6 +2811,16 @@
 			)
 		)
 		(uuid "ba1e46d3-ce10-4467-b286-c5867b73b572")
+	)
+	(text "This could have been avoided if i wired LEAD_HEAT\nled from VCC instead of to ground... in hindsight !"
+		(exclude_from_sim no)
+		(at 225.298 70.866 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "e0cec9e6-97bd-494e-9e7a-87bba6da3dbd")
 	)
 	(text "blue/white"
 		(exclude_from_sim no)
@@ -3441,6 +3511,16 @@
 			(type default)
 		)
 		(uuid "a6883069-cf95-44d8-8db3-8f4d1bfb02eb")
+	)
+	(wire
+		(pts
+			(xy 62.23 39.37) (xy 62.23 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b17bd18a-03ed-4c8b-8cac-8af0a251edd0")
 	)
 	(wire
 		(pts
@@ -4233,6 +4313,72 @@
 				)
 				(justify right)
 				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:LINE")
+		(at 62.23 39.37 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "11739ad1-269f-4fab-8149-318888488f79")
+		(property "Reference" "#PWR013"
+			(at 62.23 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "FUSED"
+			(at 62.23 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 62.23 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 62.23 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"LINE\""
+			(at 62.23 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e15f1583-ffce-4803-a353-f0f57132e8f0")
+		)
+		(instances
+			(project "smart-chauffe-assiettes"
+				(path "/ce582257-7618-43dc-a01a-d7f6978c4483"
+					(reference "#PWR013")
+					(unit 1)
+				)
 			)
 		)
 	)
@@ -5186,7 +5332,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "LINE"
+		(property "Value" "PHASE"
 			(at 41.91 34.29 0)
 			(effects
 				(font
@@ -6307,7 +6453,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "NEUT"
+		(property "Value" "NEUTRAL"
 			(at 41.91 62.23 0)
 			(effects
 				(font
