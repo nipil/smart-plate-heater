@@ -29,7 +29,7 @@ const int32_t RAW_EDGE_4619_GRAMS = 2609744L;
 const int32_t UNITS_PER_GRAM = 438L;
 
 // PINS
-// GPO / output / OPTOTRIAC
+// GPO / output / HEAT_LED_AND_INVERTED_RELAY
 // GP1 / output / HX711 / PD_SCK
 // GP2 / input / HX711 / DOUT
 // GP3 / input / button (not debounced)
