@@ -28,8 +28,9 @@
 // const int32_t RAW_EDGE_4619_GRAMS = 2609744L;
 // const int32_t UNITS_PER_GRAM = 438L;
 
-#define RAW_THRESHOLD_ALLOW_CENTER 850000L
-#define RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE 50000L
+// in this application we only care for the 16 most significant bits
+#define RAW_THRESHOLD_ALLOW_CENTER (850000L >> 8)
+#define RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE (50000L >> 8)
 
 // PINS
 // GPO / output / HEAT_LED_AND_INVERTED_RELAY
@@ -38,34 +39,40 @@
 // GP3 / input / button (not debounced)
 
 // HX711 : after reset channel is A with gain 128
-#define HX711_N_BITS 24
+
+// XC8 user's manual, section "Integer Data Types" :
+//   All integer values are represented in little-endian format
+//   with the Least Significant Byte (LSB) at the lower address
+
+typedef union {
+    // by reading 24 bits first in uint8 #3, then #2, then #1
+    uint8_t as_uint8[4];
+    // we then can read the most significant bits in int16 #1
+    int16_t as_int16[2];
+} HX711_VALUE;
 
 void main(void) {
 
     // Allow using GP2 as GPIO (disable T0CS)
     OPTION = 0xFF & ~T0CS;
 
-    // define HEAT OUTPUT prior to enabling
-    GPIObits.GP0 = 0;
-
-    // define HX711 CLOCK OUTPUT prior to enabling
-    GPIObits.GP1 = 1;
-
     // use GP3 and GP2 as input, GP1 and GP0 as output
     TRIS = 0b1100;
+
+    // define HEAT OUTPUT (could be done before TRIS ? need pull-down)
+    GPIObits.GP0 = 0;
+
+    // define HX711 CLOCK OUTPUT (could be done before TRIS ? need pull-up)
+    GPIObits.GP1 = 1;
 
     // make sure HX711 goes to sleep
     _delay(100);
 
     // recorded value on threshold
-    int32_t recorded_value = 0;
+    int16_t recorded_value = 0;
 
     while (1) {
-
-        // HX711 output is a 24 bits **signed** int
-        // output is a 2's complement value
-        // from min 0x800000 to max 0x7FFFFF
-        int32_t value = 0;
+        HX711_VALUE values = {0};
 
         // when PD_SCK is LOW, chip is active
         GPIObits.GP1 = 0;
@@ -73,24 +80,29 @@ void main(void) {
         // wait for data ready (T1)
         while (GPIObits.GP2);
 
-        // pull bits MSB first
-        for (uint8_t i = 0; i < HX711_N_BITS; i++) {
+        // it is 2x faster to process 24 bits as 3 times 8 bits
+        // than to use an int32, *AND* it prevents the HX711
+        // from going to sleep if clock is high during +60us
+        // IMPORTANT : HX711 gives MSB bit first
+        for (uint8_t j = 3; j > 0; j--) {
+            for (uint8_t i = 0; i < 8; i++) {
 
-            // clock rise
-            GPIObits.GP1 = 1;
-            // wait for data ready (T2)
-            _delay(1);
+                // clock rise
+                GPIObits.GP1 = 1;
+                // wait for data ready (T2)
+                _delay(1);
 
-            // read data bit and append from low side
-            value = (value << 1);
-            value |= GPIObits.GP2;
+                // read data bit and append from low side
+                values.as_uint8[j] <<= 1;
+                values.as_uint8[j] |= GPIObits.GP2;
 
-            // wait high (T3)
-            _delay(1);
-            // clock fall
-            GPIObits.GP1 = 0;
-            // wait low (T4)
-            _delay(1);
+                // wait high (T3)
+                _delay(1);
+                // clock fall
+                GPIObits.GP1 = 0;
+                // wait low (T4)
+                _delay(1);
+            }
         }
 
         // PD_SCK should do 1-3 more cycle for next channel select
@@ -113,19 +125,26 @@ void main(void) {
         // make sure HX711 goes to sleep
         _delay(100);
 
-        // turn an int24_t into a int32_t by setting more sign bits
-        if (value >= 0x00800000) {
-            value |= 0xFF000000;
-        }
+        // HX711 output is a 24 bits **signed** int
+        // output is a 2's complement value
+        // from min 0x800000 to max 0x7FFFFF
+
+        // uint8_t stimulus_values[3] = {
+        // 0x37, // 0b00110111 // MSB
+        // 0xDF, // 0b11011111
+        // 0xEF  // 0b11100111 // LSB
+        // };
+
+        // FIXME: process engouh bits ... or not ?
 
         // SAFETY: if too light at all, disable unconditionally
-        if (value < RAW_THRESHOLD_ALLOW_CENTER) {
+        if (values.as_int16[1] < RAW_THRESHOLD_ALLOW_CENTER) {
             GPIObits.GP0 = 0;
             continue;
         }
 
         // FUNCTION: if too light relatively to the recorded value, disable
-        if (value < recorded_value) {
+        if (values.as_int16[1] < recorded_value) {
             GPIObits.GP0 = 0;
             continue;
         }
@@ -143,6 +162,6 @@ void main(void) {
         GPIObits.GP0 = 1;
 
         // record current value for later use as a fine threshold
-        recorded_value = value - RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE;
+        recorded_value = values.as_int16[1] - RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE;
     }
 }
