@@ -17,16 +17,19 @@
 #include <xc.h>
 
 // Calibration done using an arduino with serial output
-const int32_t RAW_SELF_SUSPENDED_WEIGHT = 357882L;
-const int32_t RAW_SELF_GRAVITY_WEIGHT = 655988L;
-const int32_t RAW_EDGE_312_GRAMS = 793342L;
-const int32_t RAW_EDGE_1293_GRAMS = 1216109L;
-const int32_t RAW_EDGE_2254_GRAMS = 1615611L;
-const int32_t RAW_EDGE_2566_GRAMS = 1800440L;
-const int32_t RAW_EDGE_3547_GRAMS = 2248014L;
-const int32_t RAW_EDGE_3859_GRAMS = 2383308L;
-const int32_t RAW_EDGE_4619_GRAMS = 2609744L;
-const int32_t UNITS_PER_GRAM = 438L;
+// const int32_t RAW_SELF_SUSPENDED_WEIGHT = 357882L;
+// const int32_t RAW_SELF_GRAVITY_WEIGHT = 646718L;
+// const int32_t RAW_EDGE_312_GRAMS = 793342L;
+// const int32_t RAW_EDGE_1293_GRAMS = 1216109L;
+// const int32_t RAW_EDGE_2254_GRAMS = 1615611L;
+// const int32_t RAW_EDGE_2566_GRAMS = 1800440L;
+// const int32_t RAW_EDGE_3547_GRAMS = 2248014L;
+// const int32_t RAW_EDGE_3859_GRAMS = 2383308L;
+// const int32_t RAW_EDGE_4619_GRAMS = 2609744L;
+// const int32_t UNITS_PER_GRAM = 438L;
+
+#define RAW_THRESHOLD_ALLOW_CENTER 850000L
+#define RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE 50000L
 
 // PINS
 // GPO / output / HEAT_LED_AND_INVERTED_RELAY
@@ -37,21 +40,28 @@ const int32_t UNITS_PER_GRAM = 438L;
 // HX711 : after reset channel is A with gain 128
 #define HX711_N_BITS 24
 
-#define THRESHOLD_VALUE 2000000L
-
 void main(void) {
+
     // Allow using GP2 as GPIO (disable T0CS)
     OPTION = 0xFF & ~T0CS;
+
+    // define HEAT OUTPUT prior to enabling
+    GPIObits.GP0 = 0;
+
+    // define HX711 CLOCK OUTPUT prior to enabling
+    GPIObits.GP1 = 1;
+
     // use GP3 and GP2 as input, GP1 and GP0 as output
     TRIS = 0b1100;
-    // disable optotriac
-    GPIObits.GP0 = 0;
-    // disable HX711
-    GPIObits.GP1 = 1;
+
     // make sure HX711 goes to sleep
     _delay(100);
 
+    // recorded value on threshold
+    int32_t recorded_value = 0;
+
     while (1) {
+
         // HX711 output is a 24 bits **signed** int
         // output is a 2's complement value
         // from min 0x800000 to max 0x7FFFFF
@@ -65,6 +75,7 @@ void main(void) {
 
         // pull bits MSB first
         for (uint8_t i = 0; i < HX711_N_BITS; i++) {
+
             // clock rise
             GPIObits.GP1 = 1;
             // wait for data ready (T2)
@@ -102,16 +113,36 @@ void main(void) {
         // make sure HX711 goes to sleep
         _delay(100);
 
-        // if too light, disable unconditionally
-        if (value < THRESHOLD_VALUE) {
+        // turn an int24_t into a int32_t by setting more sign bits
+        if (value >= 0x00800000) {
+            value |= 0xFF000000;
+        }
+
+        // SAFETY: if too light at all, disable unconditionally
+        if (value < RAW_THRESHOLD_ALLOW_CENTER) {
             GPIObits.GP0 = 0;
             continue;
         }
 
-        // enough weight present, activate but only if requested
-        if (GPIObits.GP3) {
-            // enable optotriac
-            GPIObits.GP0 = 1;
+        // FUNCTION: if too light relatively to the recorded value, disable
+        if (value < recorded_value) {
+            GPIObits.GP0 = 0;
+            continue;
         }
+
+        // enough weight present is still present
+
+        // if button is not pressed (state high, pulled-up), stay the same
+        if (GPIObits.GP3) {
+            continue;
+        }
+
+        // button is pressed (state forced to low)
+
+        // enable heat output
+        GPIObits.GP0 = 1;
+
+        // record current value for later use as a fine threshold
+        recorded_value = value - RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE;
     }
 }
