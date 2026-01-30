@@ -29,8 +29,8 @@
 // const int32_t UNITS_PER_GRAM = 438L;
 
 // in this application we only care for the 16 most significant bits
-#define RAW_THRESHOLD_ALLOW_CENTER (850000L >> 8)
-#define RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE (50000L >> 8)
+#define RAW_THRESHOLD_ALLOW_CENTER (900000L >> 8)
+#define RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE (21000L >> 8)
 
 // PINS
 // GPO / output / HEAT_LED_AND_INVERTED_RELAY
@@ -39,6 +39,9 @@
 // GP3 / input / button (not debounced)
 
 // HX711 : after reset channel is A with gain 128
+// HX711 output is a 24 bits **signed** int
+// output is a 2's complement value
+// from min 0x800000 to max 0x7FFFFF
 
 // XC8 user's manual, section "Integer Data Types" :
 //   All integer values are represented in little-endian format
@@ -56,13 +59,19 @@ void main(void) {
     // Allow using GP2 as GPIO (disable T0CS)
     OPTION = 0xFF & ~T0CS;
 
+    // define HEAT OUTPUT (before TRIS ? need pull-down anyway)
+    GPIObits.GP0 = 0;
+
+    // define HX711 CLOCK OUTPUT (before TRIS ? need pull-up anyway)
+    GPIObits.GP1 = 1;
+
     // use GP3 and GP2 as input, GP1 and GP0 as output
     TRIS = 0b1100;
 
-    // define HEAT OUTPUT (could be done before TRIS ? need pull-down)
+    // define HEAT OUTPUT (after TRIS ? then glitched to whatever was set)
     GPIObits.GP0 = 0;
 
-    // define HX711 CLOCK OUTPUT (could be done before TRIS ? need pull-up)
+    // define HX711 CLOCK OUTPUT (after TRIS ? then glitched to whatever was set)
     GPIObits.GP1 = 1;
 
     // make sure HX711 goes to sleep
@@ -72,7 +81,10 @@ void main(void) {
     int16_t recorded_value = 0;
 
     while (1) {
-        HX711_VALUE values = {0};
+        // less opcodes if using 8 or 16 bits than 32 bits
+        HX711_VALUE values;
+        values.as_int16[0] = 0;
+        values.as_int16[1] = 0;
 
         // when PD_SCK is LOW, chip is active
         GPIObits.GP1 = 0;
@@ -125,10 +137,6 @@ void main(void) {
         // make sure HX711 goes to sleep
         _delay(100);
 
-        // HX711 output is a 24 bits **signed** int
-        // output is a 2's complement value
-        // from min 0x800000 to max 0x7FFFFF
-
         // uint8_t stimulus_values[3] = {
         // 0x37, // 0b00110111 // MSB
         // 0xDF, // 0b11011111
@@ -161,7 +169,8 @@ void main(void) {
         // enable heat output
         GPIObits.GP0 = 1;
 
-        // record current value for later use as a fine threshold
-        recorded_value = values.as_int16[1] - RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE;
+        // record current value for later use as a fine threshold (less opcodes if done in 2 steps)
+        recorded_value = values.as_int16[1];
+        recorded_value -= RAW_RECODED_THRESHOLD_DISABLE_UNDEVALUE;
     }
 }
