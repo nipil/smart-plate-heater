@@ -154,6 +154,7 @@ void main(void) {
         // FUNCTION: if too light relatively to the recorded value, disable
         if (values.as_int16[1] < recorded_value) {
             GPIObits.GP0 = 0;
+            recorded_value = 0;
             continue;
         }
 
