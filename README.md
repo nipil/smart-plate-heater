@@ -2,6 +2,21 @@
 
 A weight-based, smart plate heater for ease of use and safety
 
+## Pinouts
+
+Target perfboard using PIC10F202 SOT-23-to-DIP pinout
+
+    PIN 1 = GP0 = OUT_HEAT  PIN 6 = GP3 = IN_BUTTON
+    PIN 2 = VSS (-)         PIN 5 = VDD (+)
+    PIN 3 = GP1 = OUT_CLK   PIN 4 = GP2 = IN_DATA
+
+Arduino prototype on ESP32 DevKit pinout
+
+    G14 = OUT_HEAT
+    G25 = OUT_CLOCK
+    G13 = IN_DATA
+    G34 = IN_BUTTON
+
 ## kicad folder
 
 Design for electronics and target solderboard in a box
