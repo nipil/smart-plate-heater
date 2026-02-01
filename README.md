@@ -27,13 +27,17 @@ Only 3 shrink fit insulation patches, where i forgot to make multi-level "manhat
 
 ## Schematic and "perfboard" PCB
 
-The way it works and AC safety is done
+The way the main board works and AC safety is done in the derivation box
 
 ![perfboard schematic](images\perfboard-schematic.jpg)
 
 I always prepare my perfboard routing on a appropriately sized PCB
 
 ![perfboard pcb](images\perfboard-pcb.png)
+
+The way the appliance and user panel is wired
+
+![appliance schematic](images\appliance-schematic.jpg)
 
 ## Hardware
 
