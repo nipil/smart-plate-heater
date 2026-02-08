@@ -25,6 +25,14 @@ Only 3 shrink fit insulation patches, where i forgot to make multi-level "manhat
 
 ![perfboard back](images/perfboard-back.jpg)
 
+Everything fits in a 80x80 mm derivation box, even if it is crowded. And i can still easily take the microcontroller out, for in-situ calibration with another "debugging" MCU, and re-program the "target" MCU before sticking it back in.
+
+![box inside](images/boite-ouverte.jpg)
+
+Finally i managed to make both output exit on the same side, and the input on the opposite side, which is pretty neat.
+
+![box outside](images/boite-fermee.jpg)
+
 ## Schematic and "perfboard" PCB
 
 The way the main board works and AC safety is done in the derivation box
